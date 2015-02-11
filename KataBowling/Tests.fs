@@ -15,7 +15,7 @@ let ``When the score of a perfect game is calculated the result should equal 300
 
 [<Test>]
 let ``When the score of a game with only Spare 5 is calculated the result should equal 150`` () =
-    createGameResults (Spare 5) (Final (FinalTurnResult.Spare 5))
+    createGameResults (Spare 5) (Final (FinalTurnResult.Spare {FirstTry=5;ThirdTry=5}))
     |> calculateGameScore
     |> should equal 150
 

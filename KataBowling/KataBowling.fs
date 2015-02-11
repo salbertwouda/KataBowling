@@ -1,9 +1,10 @@
 ﻿module KataBowling
 
+type FinalSpareResult = {FirstTry:int;ThirdTry:int}
 type FinalTurnResult =
     | ThreeStrikes
     | TwoStrikes of int
-    | Spare of int
+    | Spare of FinalSpareResult
     | Points of int*int
 
 type TurnResult = 
@@ -15,34 +16,34 @@ type TurnResult =
 let rec private getPointsOfAllTries = function
     | Strike -> 10
     | Spare _ -> 10
-    | Points (x,y) -> x+y
-    | Final r -> 
-        match r with
+    | Points (pointsOfFirstTry,pointsOfSecondTry) -> pointsOfFirstTry + pointsOfSecondTry
+    | Final result -> 
+        match result with
         | ThreeStrikes -> 30
         | TwoStrikes p -> 20 + p
-        | FinalTurnResult.Spare p -> 10 + p
-        | FinalTurnResult.Points (x,y) -> x + y
+        | FinalTurnResult.Spare points -> 10 + points.ThirdTry
+        | FinalTurnResult.Points (pointsOfFirstTry,pointsOfSecondtry) -> pointsOfFirstTry + pointsOfSecondtry
 
 let rec private getPointsOfFirstTry = function
     | Strike -> 10
-    | Spare p -> p
-    | Points (p,_) -> p
-    | Final r -> 
-        match r with
+    | Spare pointsOfFirstTry -> pointsOfFirstTry
+    | Points (pointsOfFirstTry,_) -> pointsOfFirstTry
+    | Final result -> 
+        match result with
         | ThreeStrikes
         | TwoStrikes _ -> 10
-        | FinalTurnResult.Spare p -> p
-        | FinalTurnResult.Points (x,_) -> x
+        | FinalTurnResult.Spare points -> points.FirstTry
+        | FinalTurnResult.Points (pointsOfFirstTry,_) -> pointsOfFirstTry
 
 let rec private collectBonuses results = 
     match results with
         | Strike::first::second::tail -> 
-            let secondPoints = second |> getPointsOfAllTries
+            let pointsOfSecondResult = second |> getPointsOfAllTries
             let rest = [first;second] @ tail |> collectBonuses 
             
             first
             |> getPointsOfAllTries
-            |> (+) secondPoints
+            |> (+) pointsOfSecondResult
             |> (+) rest
         | (Spare _)::first::tail -> 
             let rest = [first]@tail |> collectBonuses
